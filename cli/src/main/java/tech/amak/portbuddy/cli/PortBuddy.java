@@ -9,6 +9,11 @@ import java.util.concurrent.Callable;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import lombok.extern.slf4j.Slf4j;
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Mixin;
@@ -16,6 +21,8 @@ import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
 import tech.amak.portbuddy.common.ClientConfig;
 import tech.amak.portbuddy.common.Mode;
+import tech.amak.portbuddy.common.dto.ExposeResponse;
+import tech.amak.portbuddy.common.dto.HttpExposeRequest;
 
 @Slf4j
 @Command(
@@ -35,6 +42,7 @@ public class PortBuddy implements Callable<Integer> {
 
   private final ObjectMapper mapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
   private final SecureRandom random = new SecureRandom();
+  private final OkHttpClient http = new OkHttpClient();
 
   public static void main(String[] args) {
     var exit = new CommandLine(new PortBuddy()).execute(args);
@@ -68,10 +76,24 @@ public class PortBuddy implements Callable<Integer> {
       return CommandLine.ExitCode.USAGE;
     }
 
-    // Simulate server interaction. In real implementation, connect to control plane and establish tunnel.
     if (mode == Mode.HTTP) {
-      final var subdomain = randomSubdomain();
-      System.out.printf("http://%s:%d exposed to: https://%s.port-buddy.com%n", hp.host, hp.port, subdomain);
+      final var cfg = loadConfig();
+      final var expose = callExposeHttp(cfg.getServerUrl(), new HttpExposeRequest(hp.host, hp.port));
+      if (expose == null) {
+        System.err.println("Failed to contact server to create tunnel");
+        return CommandLine.ExitCode.SOFTWARE;
+      }
+
+      System.out.printf("http://%s:%d exposed to: %s%n", hp.host, hp.port, expose.publicUrl());
+
+      final var tunnelId = expose.tunnelId();
+      if (tunnelId == null || tunnelId.isBlank()) {
+        System.err.println("Server did not return tunnelId");
+        return CommandLine.ExitCode.SOFTWARE;
+      }
+
+      final var client = new HttpTunnelClient(cfg.getServerUrl(), tunnelId, hp.host, hp.port);
+      client.runBlocking();
     } else {
       final var proxyIndex = 1 + random.nextInt(10);
       final var publicPort = 30000 + random.nextInt(20000);
@@ -81,11 +103,45 @@ public class PortBuddy implements Callable<Integer> {
     return CommandLine.ExitCode.OK;
   }
 
-  private String randomSubdomain() {
-    final var animals = new String[] {"falcon", "lynx", "orca", "otter", "swift", "sparrow", "tiger", "puma"};
-    final var name = animals[random.nextInt(animals.length)];
-    final var num = 1000 + random.nextInt(9000);
-    return name + "-" + num;
+  private ExposeResponse callExposeHttp(String baseUrl, HttpExposeRequest reqBody) {
+    try {
+      final var url = baseUrl + "/api/expose/http";
+      final var json = mapper.writeValueAsString(reqBody);
+      final var request = new Request.Builder()
+          .url(url)
+          .post(RequestBody.create(json, MediaType.parse("application/json")))
+          .build();
+
+      try (Response resp = http.newCall(request).execute()) {
+        if (!resp.isSuccessful()) {
+          log.warn("Expose HTTP failed: {} {}", resp.code(), resp.message());
+          return null;
+        }
+        final var body = resp.body();
+        if (body == null) return null;
+        final var str = body.string();
+        return mapper.readValue(str, ExposeResponse.class);
+      }
+    } catch (Exception e) {
+      log.warn("Expose HTTP call error: {}", e.toString());
+      return null;
+    }
+  }
+
+  private ClientConfig loadConfig() {
+    final var cfg = new ClientConfig();
+    try {
+      final var home = System.getProperty("user.home");
+      final var file = Path.of(home, ".port-buddy", "config.json");
+      if (Files.exists(file)) {
+        final var loaded = mapper.readValue(file.toFile(), ClientConfig.class);
+        if (loaded.getServerUrl() != null) cfg.setServerUrl(loaded.getServerUrl());
+        if (loaded.getApiToken() != null) cfg.setApiToken(loaded.getApiToken());
+      }
+    } catch (Exception e) {
+      log.warn("Failed to load config: {}", e.toString());
+    }
+    return cfg;
   }
 
   private HostPort parseHostPort(String arg) {

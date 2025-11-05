@@ -1,26 +1,33 @@
 package tech.amak.portbuddy.server.web;
 
 import java.security.SecureRandom;
+import java.util.UUID;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import tech.amak.portbuddy.server.web.dto.HttpExposeRequest;
-import tech.amak.portbuddy.server.web.dto.ExposeResponse;
+import tech.amak.portbuddy.common.dto.ExposeResponse;
+import tech.amak.portbuddy.common.dto.HttpExposeRequest;
+import tech.amak.portbuddy.server.tunnel.TunnelRegistry;
 
 @RestController
 @RequestMapping(path = "/api/expose", produces = MediaType.APPLICATION_JSON_VALUE)
+@RequiredArgsConstructor
 public class ExposeController {
 
   private final SecureRandom random = new SecureRandom();
+  private final TunnelRegistry registry;
 
   @PostMapping("/http")
   public ExposeResponse exposeHttp(@RequestBody HttpExposeRequest req) {
     final var subdomain = randomSubdomain();
+    final var tunnelId = UUID.randomUUID().toString();
+    registry.createPending(subdomain, tunnelId);
     final var publicUrl = "https://" + subdomain + ".port-buddy.com";
     final var source = "http://" + req.host() + ":" + req.port();
-    return new ExposeResponse(source, publicUrl, null, null);
+    return new ExposeResponse(source, publicUrl, null, null, tunnelId, subdomain);
   }
 
   @PostMapping("/tcp")
@@ -29,7 +36,7 @@ public class ExposeController {
     final var publicHost = "tcp-proxy-" + proxyIdx + ".port-buddy.com";
     final var publicPort = 30000 + random.nextInt(20000);
     final var source = "tcp " + req.host() + ":" + req.port();
-    return new ExposeResponse(source, null, publicHost, publicPort);
+    return new ExposeResponse(source, null, publicHost, publicPort, null, null);
   }
 
   private String randomSubdomain() {
