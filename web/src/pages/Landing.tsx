@@ -11,7 +11,7 @@ export default function Landing() {
               Expose local ports to the internet in seconds
             </h1>
             <p className="text-white/70 mt-6 text-lg">
-              Port Buddy is a simple, developer-friendly alternative to ngrok. Share your local HTTP and TCP services securely with a single command.
+              This project is a tool that allows you to share a port opened on the local host or in a private network to the public network. It is built as a client-server application that exposes a port opened on the local host or in a private network to the public network. It is an analog of ngrok.com but much simpler.
             </p>
             <div className="mt-8 flex flex-wrap gap-4">
               <Link to="/install" className="btn">Install CLI</Link>
@@ -26,12 +26,16 @@ export default function Landing() {
               <pre className="mt-3 bg-black/30 border border-white/10 rounded-lg p-4 overflow-auto text-sm" aria-label="CLI usage examples">
 {`# HTTP example
 $ port-buddy 3000
-http://localhost:3000 exposed to: https://random-subdomain.port-buddy.com
+http://localhost:3000 exposed to: https://abc123.portbuddy.dev
 
 # TCP example (e.g., Postgres)
-$ port-buddy tcp 127.0.0.1:5432
-tcp 127.0.0.1:5432 exposed to: tcp-proxy-3.port-buddy.com:43452`}
+$ port-buddy tcp 5432
+tcp localhost:5432 exposed to: tcp-proxy-3.portbuddy.dev:43452`}
               </pre>
+              <p className="text-xs text-white/50 mt-3">
+                If someone opens this URL (https://abc123.portbuddy.dev) in the browser, they will see the web-app which is running on your local machine.
+                Any HTTP request or WebSocket connection to that URL is proxied through the CLI to your local app.
+              </p>
               <p className="text-xs text-white/50 mt-3">Supports HTTP, WebSocket, and raw TCP.</p>
             </div>
           </div>
@@ -94,19 +98,21 @@ tcp 127.0.0.1:5432 exposed to: tcp-proxy-3.port-buddy.com:43452`}
       {/* Pricing */}
       <section id="pricing" className="container py-16 scroll-mt-24">
         <h2 className="text-2xl font-bold">Pricing</h2>
-        <div className="grid md:grid-cols-3 gap-6 mt-6">
-          <PlanCard name="basic" price="$5" features={[
-            'HTTP connections only',
-            'Up to 3Gb traffic per day',
+        <div className="grid md:grid-cols-2 gap-6 mt-6">
+          <PlanCard name="Hobby" price="$0" features={[
+            'HTTP traffic',
+            '2 static subdomains',
+            'HTTP requests logging',
+            'Number of concurrent tunnels: 2',
+            'Tunnel lifetime: 1 hour',
           ]} />
-          <PlanCard name="individual" price="$10" features={[
-            'Everything in basic',
-            'TCP connections',
-            'Up to 6Gb traffic per day',
-          ]} />
-          <PlanCard name="professional" price="$20" features={[
-            'Everything in individual',
-            'Up to 20Gb traffic per day',
+          <PlanCard name="Developer" price="$10" features={[
+            'Everything in the Hobby plan',
+            'TCP traffic',
+            'Number of concurrent tunnels: 10',
+            'Tunnel lifetime: unlimited',
+            '10 static subdomains',
+            '1 custom domain',
           ]} />
         </div>
         <p className="text-xs text-white/50 mt-4">Prices in USD per month.</p>
