@@ -9,13 +9,13 @@ To expose a port, user runs command-line application and specify host(optionally
 * `port` is required. must be in range [1, 65535].
 
 Http example: if user has a running web-app on the local machine at localhost:3000 and he wants to share it to someone else over the public network. User run command `port-buddy 3000`.
-He gets back in the console a unique url to access the port in the public network. Console output: `http://localhost:3000 exposed to: https://random-subdomain.port-buddy.com`. 
-If someone opens this url (https://random-subdomain.port-buddy.com) in the browser, he will see the web-app which is running on the user's local machine.
-Technically, any http request or websocket connection to the url (https://random-subdomain.port-buddy.com) will be proxied through client application `port-buddy` to the user's web-app running at localhost:3000.
+He gets back in the console a unique url to access the port in the public network. Console output: `http://localhost:3000 exposed to: https://abc123.portbuddy.dev`. 
+If someone opens this url (https://abc123.portbuddy.dev) in the browser, he will see the web-app which is running on the user's local machine.
+Technically, any http request or websocket connection to the url (https://abc123.portbuddy.dev) will be proxied through client application `port-buddy` to the user's web-app running at localhost:3000.
 
 TCP example: user wants to open a connection to the database which is running in a private network to public network and share it to someone. For instance, user has postgresql db running on localhost:5432.
-User run command `port-buddy tcp 5432`. Console output: `tcp localhost:5432 exposed to: tcp-proxy-3.port-buddy.com:43452`, where port 43452 is dynamically assigned based on port availability. 
-Then someone could connect to a user's database using a database client by specifying host=random-subdomain.port-buddy.com and port=43452.
+User run command `port-buddy tcp 5432`. Console output: `tcp localhost:5432 exposed to: tcp-proxy-3.portbuddy.dev:43452`, where port 43452 is dynamically assigned based on port availability. 
+Then someone could connect to a user's database using a database client by specifying host=abc123.portbuddy.dev and port=43452.
 
 User must be authenticated and have an active subscription. User could log into the system using Google or GitHub account. For authentication OAuth2 protocol with JWT tokens is used,  
 To authenticate CLI client, user should generate API token in his account and then run command `port-buddy init {API_TOKEN}`, where {API_TOKEN} - is a placeholder for generated API token.
