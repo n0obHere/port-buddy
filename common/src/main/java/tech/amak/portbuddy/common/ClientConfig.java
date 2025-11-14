@@ -12,6 +12,8 @@ public class ClientConfig {
     private String apiToken;
 
     @JsonProperty("serverUrl")
-    //    private String serverUrl = "https://api.port-buddy.com";
-    private String serverUrl = "http://localhost:8080";
+    private String serverUrl;
+
+    @JsonProperty("logLinesCount")
+    private int logLinesCount = 20;
 }
