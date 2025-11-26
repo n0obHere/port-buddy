@@ -38,6 +38,12 @@ public class PortBuddySubdomainLoadBalancer implements ReactorServiceInstanceLoa
     private final RoundRobinLoadBalancer roundRobin;
     private final WebClient webClient;
 
+    /**
+     * Constructor.
+     *
+     * @param supplierProvider the service instance supplier provider
+     * @param serviceId        service ID
+     */
     public PortBuddySubdomainLoadBalancer(final ObjectProvider<ServiceInstanceListSupplier> supplierProvider,
                                           final String serviceId) {
         this.supplierProvider = supplierProvider;
