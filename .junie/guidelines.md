@@ -60,7 +60,8 @@ All variables which value is not changed must be marked with `final` modifier.
 All method params must be marked with `final` modifier.
 For local variable `var` must be used instead of class name.
 Lombok library is used for getters/setters, log reference, ect.
-Do not shorten variable names. Always use meaningful names.
+Do not shorten variable names. Always use meaningful names. bad example: `final var r : records` or `final var e = new ApiKeyEntity();`, good example: `final var record : records` or `final var apiKey = new ApiKeyEntity();`. Follow the same naming convention for all variables.
+Local variable name pattern: `^[a-z]([a-z0-9][a-zA-Z0-9]*)?$`
 Use 4 spaces for indentation.
 Must follow checkstyle rules: https://raw.githubusercontent.com/amak-tech/checkstyle-java/refs/heads/main/checkstyle.xml
 
@@ -71,6 +72,8 @@ It uses webflux implementation. All gateway config properties must be under base
 Is written using Spring Boot 3.5.7 framework. 
 Any other necessary libraries could be used.
 Uses PostgreSQL DB to store data.
+Use Spring JPA to access DB.
+Use Flyway to manage DB migrations.
 Dockerized.
 
 ### TCP Proxy Application
@@ -90,6 +93,7 @@ Has modern and stylish design. Font-family: "JetBrains Mono" or monospace.
 Take the following web-sites as an example how it should look like:
 * https://www.jetbrains.com/
 * https://localxpose.io/
+* https://localtonet.com/#pricing
 
 #### Index page.
 Is a landing page that present project to a user in the best positive way.
