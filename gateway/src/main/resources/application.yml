@@ -79,17 +79,29 @@ spring:
               predicates:
                 - Path=/api/**, /oauth2/**, /login/oauth2/**, /.well-known/jwks.json
 
-            - id: spa_frontend_route
+            - id: spa_fallback_route
+              enabled: ${app.spa-fallback-enabled}
               uri: forward:/index.html
               order: 3
               predicates:
                 - Path=/install, /app/**, /login/**, /auth/callback
 
+            # Dev: Proxy SPA paths to the Vite dev server
+            - id: spa_frontend_route
+              enabled: ${app.spa-backend-enabled}
+              order: 100
+              uri: http://localhost:5173
+              predicates:
+                - Path=/**
+              filters:
+                - PreserveHostHeader
 
 app:
   domain: localhost:8080
   scheme: http
   url: ${app.scheme}://${app.domain}
+  spa-backend-enabled: true
+  spa-fallback-enabled: false
   jwt:
     jwk-set-uri: ${app.url}/.well-known/jwks.json
     # Must match the issuer used by the Server when minting JWTs
@@ -100,3 +112,13 @@ logging:
     root: info
     reactor.netty.http.client: warn
     org.springframework.cloud.gateway: warn
+
+---
+spring:
+  config:
+    activate:
+      on-profile: prod
+
+app:
+  spa-backend-enabled: false
+  spa-fallback-enabled: true
