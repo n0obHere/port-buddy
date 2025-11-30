@@ -1,5 +1,5 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
-import { API_BASE, apiJson } from '../lib/api'
+import { API_BASE, apiJson, getToken } from '../lib/api'
 
 export type User = {
     id: string
@@ -45,11 +45,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const refresh = useCallback(async () => {
         setLoading(true)
+
+        if (!getToken()) {
+            setUser(null)
+            setLoading(false)
+            return
+        }
+
         try {
             const details = await apiJson<{
                 user: { id: string, email: string, firstName?: string, lastName?: string, avatarUrl?: string }
                 account?: { plan?: string }
-            }>('/api/users/me/details')
+            }>('/api/users/me/details', undefined, { skipRedirectOn401: true })
 
             const firstName = details?.user?.firstName?.trim() || ''
             const lastName = details?.user?.lastName?.trim() || ''
@@ -64,7 +71,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 // Keep plan optional; server plans may not match current union type
             }
             setUser(mapped)
-        } catch (e) {
+        } catch (e: any) {
+            if (e.status === 401) {
+                try {
+                    localStorage.removeItem('pb_token')
+                } catch (_) {
+                    // ignore
+                }
+            }
             setUser(null)
         } finally {
             setLoading(false)

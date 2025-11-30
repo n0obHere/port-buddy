@@ -62,13 +62,15 @@ function withAuth(init?: RequestInit): RequestInit {
     }
 }
 
-export async function apiJson<T = any>(path: string, init?: RequestInit): Promise<T> {
+export async function apiJson<T = any>(path: string, init?: RequestInit, options?: { skipRedirectOn401?: boolean }): Promise<T> {
     const res = await fetch(`${API_BASE}${path}`, withAuth({
         headers: { 'Content-Type': 'application/json', ...(init?.headers || {}) },
         ...init,
     }))
     if (res.status === 401) {
-        redirectToLogin(true)
+        if (!options?.skipRedirectOn401) {
+            redirectToLogin(true)
+        }
         // Throw to stop any further processing by callers
         const err: any = new Error('Unauthorized')
         err.status = 401
