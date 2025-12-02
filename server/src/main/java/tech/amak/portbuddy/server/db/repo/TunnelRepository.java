@@ -16,20 +16,40 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import tech.amak.portbuddy.server.db.entity.DomainEntity;
 import tech.amak.portbuddy.server.db.entity.TunnelEntity;
+import tech.amak.portbuddy.server.db.entity.TunnelStatus;
 
 @Repository
 public interface TunnelRepository extends JpaRepository<TunnelEntity, UUID> {
 
     Optional<TunnelEntity> findByTunnelId(String tunnelId);
 
-    Page<TunnelEntity> findAllByUserId(UUID userId, Pageable pageable);
+    boolean existsByDomainAndStatus(DomainEntity domain, TunnelStatus status);
 
-    @Query(value = "SELECT * FROM tunnels t WHERE t.user_id = :userId "
-        + "ORDER BY (t.last_heartbeat_at IS NULL), t.last_heartbeat_at DESC, t.created_at DESC",
-        countQuery = "SELECT COUNT(1) FROM tunnels t WHERE t.user_id = :userId",
+    boolean existsByDomainAndStatusNot(DomainEntity domain, TunnelStatus status);
+
+    Optional<TunnelEntity> findFirstByAccountIdAndLocalHostAndLocalPortAndDomainIsNotNullOrderByCreatedAtDesc(
+        UUID accountId, String localHost, Integer localPort);
+
+    default Optional<TunnelEntity> findUsedTunnel(final UUID accountId,
+                                                  final String localHost,
+                                                  final Integer localPort) {
+        return findFirstByAccountIdAndLocalHostAndLocalPortAndDomainIsNotNullOrderByCreatedAtDesc(
+            accountId, localHost, localPort);
+    }
+
+    Page<TunnelEntity> findAllByAccountId(UUID accountId, Pageable pageable);
+
+    @Query(value = """
+        SELECT *
+        FROM tunnels t
+        WHERE t.account_id = :accountId
+        ORDER BY (t.last_heartbeat_at IS NULL), t.last_heartbeat_at DESC, t.created_at DESC""",
+        countQuery = "SELECT COUNT(1) FROM tunnels t WHERE t.account_id = :accountId",
         nativeQuery = true)
-    Page<TunnelEntity> pageByUserOrderByLastHeartbeatDescNullsLast(@Param("userId") UUID userId, Pageable pageable);
+    Page<TunnelEntity> pageByAccountOrderByLastHeartbeatDescNullsLast(
+        @Param("accountId") UUID accountId, Pageable pageable);
 
     /**
      * Closes tunnels that are in CONNECTED status but have stale or missing heartbeat.
