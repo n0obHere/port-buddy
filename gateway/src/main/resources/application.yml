@@ -1,5 +1,5 @@
 server:
-  port: 8080
+  port: 8443
 
 eureka:
   client:
@@ -43,11 +43,43 @@ spring:
           discovery:
             locator:
               lower-case-service-id: true
-#          filter:
-#            preserve-host-header:
-#              enabled: true
+          #          filter:
+          #            preserve-host-header:
+          #              enabled: true
 
           routes:
+            - id: acme_http01_route
+              order: -1
+              uri: lb://ssl-service
+              predicates:
+                - Path=/.well-known/acme-challenge/**
+              filters:
+                - PreserveHostHeader
+
+            - id: api_ws_route
+              order: -2
+              uri: lb:ws://port-buddy-server
+              predicates:
+                - Path=/api/http-tunnel/**
+                - Header=Upgrade, (?i)websocket
+
+            - id: net_proxy_ws_route
+              order: -2
+              uri: lb:ws://net-proxy
+              predicates:
+                - Path=/api/net-tunnel/**
+                - Header=Upgrade, (?i)websocket
+
+            - id: api_route
+              order: 2
+              uri: lb://port-buddy-server
+              predicates:
+                - Path=/api/**, /oauth2/**, /login/oauth2/**, /.well-known/jwks.json
+                # Exclude tunnel paths explicitly to ensure no overlap even with Order.
+                # Since Path predicates are ANDed, we can't easily exclude here without custom predicates.
+                # However, placing it AFTER WebSocket routes with higher Order (larger value) is the standard.
+                # I will ensure Order is correctly spaced.
+
             - id: net_proxy_route
               order: 1
               uri: lb://net-proxy
@@ -59,7 +91,7 @@ spring:
               order: 0
               uri: lb:ws://port-buddy-server
               predicates:
-                - Host={subdomain}.localhost:8080
+                - Host={subdomain}.${app.domain}
                 # Route ONLY real websocket upgrade requests to the WS upstream.
                 # Use case-insensitive match to be robust across clients/proxies.
                 - Header=Upgrade, (?i)websocket
@@ -72,12 +104,30 @@ spring:
                     regexp: /(?<remaining>.*)
                     replacement: /_ws/$\{subdomain}/$\{remaining}
 
+            # WebSocket route for custom domains.
+            - id: custom_domain_ingress_ws_route
+              order: 0
+              uri: lb:ws://port-buddy-server
+              predicates:
+                - Host={customDomain}
+                # Route ONLY real websocket upgrade requests to the WS upstream.
+                - Header=Upgrade, (?i)websocket
+                - Method=GET
+                # Exclude main domain and subdomains to avoid overlap
+                - Header=Host, ^(?!(.*\.${app.domain}|${app.domain})$).*
+              filters:
+                - PreserveHostHeader
+                - name: PortBuddyRewritePath
+                  args:
+                    regexp: /(?<remaining>.*)
+                    replacement: /_ws/$\{customDomain}/$\{remaining}
+
             # HTTP route for subdomain ingress (non-WS traffic)
             - id: subdomain_ingress_route
               order: 1
               uri: lb://port-buddy-server
               predicates:
-                - Host={subdomain}.localhost:8080
+                - Host={subdomain}.${app.domain}
               filters:
                 - PreserveHostHeader
                 - name: PortBuddyRewritePath
@@ -85,11 +135,20 @@ spring:
                     regexp: /(?<remaining>.*)
                     replacement: /_/$\{subdomain}/$\{remaining}
 
-            - id: api_route
+            # Route for custom domains
+            - id: custom_domain_ingress_route
               order: 2
               uri: lb://port-buddy-server
               predicates:
-                - Path=/api/**, /oauth2/**, /login/oauth2/**, /.well-known/jwks.json
+                - Host={customDomain}
+                # Exclude main domain and subdomains to avoid overlap
+                - Header=Host, ^(?!(.*\.${app.domain}|${app.domain})$).*
+              filters:
+                - PreserveHostHeader
+                - name: PortBuddyRewritePath
+                  args:
+                    regexp: /(?<remaining>.*)
+                    replacement: /_custom/$\{customDomain}/$\{remaining}
 
             - id: spa_fallback_route
               enabled: ${app.spa-fallback-enabled}
@@ -109,14 +168,24 @@ spring:
                 - PreserveHostHeader
 
 app:
-  domain: localhost:8080
-  scheme: http
+  domain: localhost:8443
+  scheme: https
   url: ${app.scheme}://${app.domain}
   server-error-page: ${app.url}/500
   spa-backend-enabled: true
   spa-fallback-enabled: false
+  ssl:
+    port: 8443
+    enabled: true
+    # brew install mkcert
+    # mkcert -install
+    # mkcert -key-file key.pem -cert-file cert.pem localhost 127.0.0.1 ::1
+    fallback:
+      enabled: true
+      key-cert-chain-file: ${SELF_SERT_CHAIN_FILE:}
+      key-file: ${SELF_SERT_KEY_FILE:}
   jwt:
-    jwk-set-uri: ${app.url}/.well-known/jwks.json
+    jwk-set-uri: lb://port-buddy-server/.well-known/jwks.json
     # Must match the issuer used by the Server when minting JWTs
     issuer: port-buddy
 
@@ -124,7 +193,9 @@ logging:
   level:
     root: info
     reactor.netty.http.client: warn
+    io.netty.handler.codec.http.websocketx: warn
     org.springframework.cloud.gateway: warn
+    org.springframework.cloud.gateway.route.RouteDefinitionRouteLocator: warn
   file:
     name: log/app.log
   logback:

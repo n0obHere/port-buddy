@@ -73,13 +73,38 @@ public class IngressController {
         HttpHeaders.CONTENT_LENGTH.toLowerCase()
     );
 
-    // Path-based fallback ingress for local/dev: http://server/_/{subdomain}/...
+    // HTTP route for subdomain ingress (non-WS traffic)
     @RequestMapping("/_/{subdomain}/**")
     @Transactional
     public void ingressPathBased(final @PathVariable("subdomain") String subdomain,
                                  final HttpServletRequest request,
                                  final HttpServletResponse response) throws IOException {
         forwardViaTunnel(subdomain, request, response);
+    }
+
+    /**
+     * Handles path-based custom domain ingress, mapping requests to the appropriate subdomain.
+     * This endpoint processes requests that use the custom domain format in their URL path.
+     *
+     * @param customDomain The custom domain identifier extracted from the request path. Used to
+     *                     locate a matching subdomain in the database.
+     * @param request      The incoming HTTP request to be forwarded to the matching subdomain's endpoint.
+     * @param response     The HTTP response object used to return output or error codes to the client.
+     * @throws IOException If an input or output error occurs during the request forwarding process
+     *                     or while setting the HTTP response.
+     */
+    // Path-based custom domain ingress: http://server/_custom/{customDomain}/...
+    @RequestMapping("/_custom/{customDomain}/**")
+    @Transactional
+    public void ingressCustomDomainPathBased(final @PathVariable("customDomain") String customDomain,
+                                             final HttpServletRequest request,
+                                             final HttpServletResponse response) throws IOException {
+        final var domainOpt = domainRepository.findByCustomDomain(customDomain);
+        if (domainOpt.isPresent()) {
+            forwardViaTunnel(domainOpt.get().getSubdomain(), request, response);
+        } else {
+            response.sendError(HttpServletResponse.SC_NOT_FOUND, "Custom domain not found");
+        }
     }
 
     private void forwardViaTunnel(final String subdomain,
