@@ -2,8 +2,10 @@ import { Link, Navigate, Outlet, Route, Routes, useLocation } from 'react-router
 import { useEffect, useState } from 'react'
 import Landing from './pages/Landing'
 import Installation from './pages/Installation'
+import Docs from './pages/Docs'
 import AcceptInvite from './pages/AcceptInvite'
 import Login from './pages/Login'
+import Register from './pages/Register'
 import ForgotPassword from './pages/ForgotPassword'
 import ResetPassword from './pages/ResetPassword'
 import Billing from './pages/app/Billing'
@@ -23,6 +25,8 @@ import Team from './pages/app/Team'
 import Ports from './pages/app/Ports'
 import Profile from './pages/app/Profile'
 import AdminPanel from './pages/app/AdminPanel'
+import Terms from './pages/Terms'
+import Privacy from './pages/Privacy'
 import NotFound from './pages/NotFound'
 import ServerError from './pages/ServerError'
 import Passcode from './pages/Passcode'
@@ -59,7 +63,7 @@ export default function App() {
   }, [startLoading, stopLoading])
 
   const isApp = location.pathname.startsWith('/app')
-  const showHeader = !isApp && !['/login', '/forgot-password', '/reset-password'].includes(location.pathname)
+  const showHeader = !isApp && !['/login', '/register', '/forgot-password', '/reset-password'].includes(location.pathname)
 
   return (
     <div className="min-h-full flex flex-col bg-slate-950 text-slate-200">
@@ -76,6 +80,7 @@ export default function App() {
           </Link>
           <nav className="flex items-center gap-8 text-sm font-medium">
             <Link to="/install" className="text-slate-400 hover:text-white transition-colors" aria-label="Installation instructions">Installation</Link>
+            <Link to="/docs" className="text-slate-400 hover:text-white transition-colors" aria-label="Documentation">Docs</Link>
             <Link to="/#pricing" className="text-slate-400 hover:text-white transition-colors" aria-label="View pricing">Pricing</Link>
             {!user ? (
               // Only Login button when not authenticated
@@ -121,12 +126,16 @@ export default function App() {
         <Routes>
           <Route path="/" element={<Landing/>} />
           <Route path="/install" element={<Installation/>} />
+          <Route path="/docs" element={<Docs/>} />
           <Route path="/login" element={<Login/>} />
+          <Route path="/register" element={<Register/>} />
           <Route path="/forgot-password" element={<ForgotPassword/>} />
           <Route path="/reset-password" element={<ResetPassword/>} />
           <Route path="/auth/callback" element={<Login/>} />
           <Route path="/accept-invite" element={<AcceptInvite/>} />
           <Route path="/passcode" element={<Passcode/>} />
+          <Route path="/terms" element={<Terms/>} />
+          <Route path="/privacy" element={<Privacy/>} />
           {/* App area with sidebar layout */}
           <Route path="/app" element={<ProtectedRoute><AppLayout/></ProtectedRoute>}>
             <Route index element={<Tunnels/>} />
@@ -162,7 +171,9 @@ export default function App() {
           <div className="flex gap-8 text-sm font-medium">
             <a href="/#pricing" className="text-slate-400 hover:text-indigo-400 transition-colors">Pricing</a>
             <a href="/#use-cases" className="text-slate-400 hover:text-indigo-400 transition-colors">Use Cases</a>
-            <a href="/#docs" className="text-slate-400 hover:text-indigo-400 transition-colors">Documentation</a>
+            <Link to="/docs" className="text-slate-400 hover:text-indigo-400 transition-colors">Documentation</Link>
+            <Link to="/terms" className="text-slate-400 hover:text-indigo-400 transition-colors">Terms</Link>
+            <Link to="/privacy" className="text-slate-400 hover:text-indigo-400 transition-colors">Privacy</Link>
           </div>
         </div>
       </footer>

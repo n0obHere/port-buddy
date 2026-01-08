@@ -25,7 +25,9 @@ type AuthState = {
     user: User | null
     loading: boolean
     loginWithGoogle: () => void
+    loginWithGithub: () => void
     loginWithEmail: (email: string, pass: string) => Promise<void>
+    register: (email: string, pass: string, name?: string) => Promise<void>
     logout: () => Promise<void>
     refresh: () => Promise<void>
     switchAccount: (accountId: string) => Promise<void>
@@ -131,6 +133,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const url = `${API_BASE}/oauth2/authorization/google?redirect_uri=${redirect}`
         window.location.href = url
     }, [])
+    
+    const loginWithGithub = useCallback(() => {
+        const redirect = encodeURIComponent(OAUTH_REDIRECT_URI)
+        // Typical Spring Security OAuth2 endpoint
+        const url = `${API_BASE}/oauth2/authorization/github?redirect_uri=${redirect}`
+        window.location.href = url
+    }, [])
 
     const loginWithEmail = useCallback(async (email: string, pass: string) => {
         const res = await apiJson<{ accessToken: string, tokenType: string }>('/api/auth/login', {
@@ -140,6 +149,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         localStorage.setItem('pb_token', res.accessToken)
         await refresh()
     }, [refresh])
+
+    const register = useCallback(async (email: string, pass: string, name?: string) => {
+        const res = await apiJson<{ success: boolean, message?: string }>('/api/auth/register', {
+            method: 'POST',
+            body: JSON.stringify({ email, password: pass, name })
+        }, { skipAuth: true })
+        
+        if (!res.success) {
+            throw new Error(res.message || 'Registration failed')
+        }
+        
+        await loginWithEmail(email, pass)
+    }, [loginWithEmail])
 
     const logout = useCallback(async () => {
         // Stateless logout: just drop the JWT from localStorage client-side
@@ -170,11 +192,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         user, 
         loading, 
         loginWithGoogle, 
+        loginWithGithub,
         loginWithEmail, 
+        register,
         logout, 
         refresh,
         switchAccount
-    }), [user, loading, loginWithGoogle, loginWithEmail, logout, refresh, switchAccount])
+    }), [user, loading, loginWithGoogle, loginWithGithub, loginWithEmail, register, logout, refresh, switchAccount])
 
     return (
         <AuthContext.Provider value={value}>
