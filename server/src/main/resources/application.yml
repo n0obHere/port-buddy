@@ -49,8 +49,8 @@ app:
           privateKeyPem: ${JWT_PRIVATE_KEY:classpath:keys/dev_jwt.pem}
 
   web-socket:
-    max-text-message-size: 100MB
-    max-binary-message-size: 1GB
+    max-text-message-size: 10MB
+    max-binary-message-size: 10MB
     session-idle-timeout: 10m
 
   cli:
