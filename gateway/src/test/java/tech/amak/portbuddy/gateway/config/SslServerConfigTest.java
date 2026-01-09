@@ -12,6 +12,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.time.Duration;
+import javax.net.ssl.SSLException;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.web.embedded.netty.NettyReactiveWebServerFactory;
@@ -19,8 +20,8 @@ import org.springframework.http.server.reactive.HttpHandler;
 
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.util.SelfSignedCertificate;
-import reactor.netty.http.client.HttpClient;
 import reactor.core.publisher.Mono;
+import reactor.netty.http.client.HttpClient;
 import tech.amak.portbuddy.gateway.ssl.DynamicSslProvider;
 
 class SslServerConfigTest {
@@ -64,7 +65,7 @@ class SslServerConfigTest {
                                 .trustManager(io.netty.handler.ssl.util.InsecureTrustManagerFactory.INSTANCE)
                                 .build())
                             .serverNames(new javax.net.ssl.SNIHostName("test.portbuddy.dev"));
-                    } catch (javax.net.ssl.SSLException e) {
+                    } catch (final SSLException e) {
                         throw new RuntimeException(e);
                     }
                 })
@@ -72,7 +73,7 @@ class SslServerConfigTest {
                 .uri("/")
                 .response()
                 .block(Duration.ofSeconds(5));
-        } catch (Exception e) {
+        } catch (final Exception e) {
             // It might fail for various reasons (no actual handler for the request), but we care about SNI lookup
         } finally {
             webServer.stop();
