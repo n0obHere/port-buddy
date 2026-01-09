@@ -109,8 +109,8 @@ public class DynamicSslProvider {
 
                 try {
                     return SslContextBuilder.forServer(
-                        new File(cert.privateKeyPath()),
-                        new File(cert.certificatePath())
+                        new File(cert.certificatePath()),
+                        new File(cert.privateKeyPath())
                     ).build();
                 } catch (final Exception e) {
                     log.error("Failed to create SslContext for {}. Using fallback.", finalLookupDomain, e);
