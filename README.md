@@ -100,6 +100,7 @@ PortBuddy is built as a multi-modular system:
 ### Prerequisites
 - Java 25
 - Docker & Docker Compose
+- Spring Boot 3
 - Maven 3.9+
 - Node.js & npm (for web module)
 
