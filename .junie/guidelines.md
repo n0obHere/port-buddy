@@ -9,7 +9,7 @@ To expose a port, user runs command-line application and specify host(optionally
 * `host` is optional and could be valid ip address or domain name. For instance [localhost, 127.0.0.1, myserveraddress.com]. `localhost` is a default host.
 * `port` is required. must be in range [1, 65535].
 
-Http example: if user has a running web-app on the local machine at localhost:3000 and he wants to share it to someone else over the public network. User run command `port-buddy 3000`.
+Http example: if user has a running web-app on the local machine at localhost:3000 and he wants to share it to someone else over the public network. User run command `portbuddy 3000`.
 He gets back in the console a unique url to access the port in the public network. Console output: `http://localhost:3000 exposed to: https://abc123.portbuddy.dev`. 
 If someone opens this url (https://abc123.portbuddy.dev) in the browser, he will see the web-app which is running on the user's local machine.
 Technically, any http request or websocket connection to the url (https://abc123.portbuddy.dev) will be proxied through client application `port-buddy` to the user's web-app running at localhost:3000.

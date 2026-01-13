@@ -96,7 +96,7 @@ export default function Landing() {
               <div className="flex items-center gap-2 text-slate-400 mb-4">
                 <span className="text-green-400">➜</span>
                 <span className="text-cyan-400">~</span>
-                <span>port-buddy 3000</span>
+                <span>portbuddy 3000</span>
               </div>
               
               <div className="space-y-2">
