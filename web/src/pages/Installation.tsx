@@ -62,13 +62,13 @@ export default function Installation() {
                     title="Install via Homebrew"
                     description="The easiest way to install on macOS."
                   >
-                    <CodeBlock code={`brew tap port-buddy/tap\nbrew install port-buddy`} />
+                    <CodeBlock code={`brew install amak-tech/tap/portbuddy`} />
                   </Step>
                   <Step 
-                    title="Initialize"
-                    description="Link the CLI to your account."
+                    title="Expose your local node.js app"
+                    description="This command will create a secured HTTP tunnel for localhost:3000"
                   >
-                    <CodeBlock code="port-buddy init {API_TOKEN}" />
+                    <CodeBlock code="portbuddy 3000" />
                   </Step>
                 </div>
               )}
@@ -79,13 +79,13 @@ export default function Installation() {
                     title="Install via Script"
                     description="Download and install the binary to /usr/local/bin."
                   >
-                    <CodeBlock code={`curl -L https://github.com/port-buddy/cli/releases/download/v1.0.0/port-buddy-linux-amd64 -o port-buddy\nchmod +x port-buddy\nsudo mv port-buddy /usr/local/bin/`} />
+                    <CodeBlock code={`curl -L https://github.com/amak-tech/port-buddy/releases/download/1.0.5-beta/portbuddy-linux-x64 -o portbuddy\nchmod +x portbuddy\nsudo mv portbuddy /usr/local/bin/`} />
                   </Step>
                   <Step 
-                    title="Initialize"
-                    description="Link the CLI to your account."
+                    title="Share access to your local PostgreSQL DB"
+                    description="This command will create a TCP tunnel for localhost:5432"
                   >
-                    <CodeBlock code="port-buddy init {API_TOKEN}" />
+                    <CodeBlock code="portbuddy tcp 5432" />
                   </Step>
                 </div>
               )}
