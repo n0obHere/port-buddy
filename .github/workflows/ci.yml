@@ -227,7 +227,14 @@ jobs:
         shell: bash
         run: |
           cp ${{ matrix.executable_path }} ${{ matrix.asset_name }}
-          SHA=$(shasum -a 256 ${{ matrix.asset_name }} | awk '{print $1}')
+          if command -v shasum &> /dev/null; then
+            SHA=$(shasum -a 256 ${{ matrix.asset_name }} | awk '{print $1}')
+          elif command -v sha256sum &> /dev/null; then
+            SHA=$(sha256sum ${{ matrix.asset_name }} | awk '{print $1}')
+          else
+            echo "No shasum or sha256sum found"
+            exit 1
+          fi
           echo "sha256=$SHA" >> $GITHUB_OUTPUT
 
       - name: Release
@@ -266,8 +273,13 @@ jobs:
           
           gh release download v${{ steps.extract_version.outputs.VERSION }} -p "portbuddy-macos-*" --repo ${{ github.repository }}
           
-          ARM_SHA=$(shasum -a 256 portbuddy-macos-arm64 | awk '{print $1}')
-          X64_SHA=$(shasum -a 256 portbuddy-macos-x64 | awk '{print $1}')
+          if command -v shasum &> /dev/null; then
+            ARM_SHA=$(shasum -a 256 portbuddy-macos-arm64 | awk '{print $1}')
+            X64_SHA=$(shasum -a 256 portbuddy-macos-x64 | awk '{print $1}')
+          else
+            ARM_SHA=$(sha256sum portbuddy-macos-arm64 | awk '{print $1}')
+            X64_SHA=$(sha256sum portbuddy-macos-x64 | awk '{print $1}')
+          fi
           
           sed -i "s/version \".*\"/version \"${{ steps.extract_version.outputs.VERSION }}\"/" Formula/portbuddy.rb
           sed -i "/portbuddy-macos-arm64\"/{n;s/sha256 \".*\"/sha256 \"$ARM_SHA\"/;}" Formula/portbuddy.rb
