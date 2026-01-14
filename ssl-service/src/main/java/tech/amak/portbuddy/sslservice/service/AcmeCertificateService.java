@@ -39,6 +39,8 @@ import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -104,8 +106,17 @@ public class AcmeCertificateService {
             job.setContactEmail(requestedBy);
         }
         final var savedJob = jobRepository.save(job);
-        // Fire and forget async processing
-        self.getIfAvailable().processJobAsync(savedJob.getId());
+        // Fire and forget async processing after transaction commit to avoid race condition
+        if (TransactionSynchronizationManager.isActualTransactionActive()) {
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                @Override
+                public void afterCommit() {
+                    self.getIfAvailable().processJobAsync(savedJob.getId());
+                }
+            });
+        } else {
+            self.getIfAvailable().processJobAsync(savedJob.getId());
+        }
         return savedJob;
     }
 

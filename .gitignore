@@ -47,3 +47,4 @@ log
 /checkstyle_report.txt
 /test_output.txt
 /config/acme/account.key
+/ssl-service/config/acme/account.key
