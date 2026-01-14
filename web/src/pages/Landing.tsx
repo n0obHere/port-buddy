@@ -11,7 +11,8 @@ import {
   ShareIcon,
   CircleStackIcon,
   ArrowRightIcon,
-  CheckIcon
+  CheckIcon,
+  HeartIcon
 } from '@heroicons/react/24/outline'
 import React from 'react'
 import Seo from '../components/Seo'
@@ -82,6 +83,26 @@ export default function Landing() {
                 <ArrowRightIcon className="w-4 h-4" />
               </Link>
             </div>
+            
+            <div className="mt-8 flex items-center justify-center gap-6">
+              <a 
+                href="https://github.com/amak-tech/port-buddy" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 text-slate-400 hover:text-white transition-colors group"
+              >
+                <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/>
+                </svg>
+                <span className="text-sm font-medium">GitHub</span>
+                <span className="text-xs bg-slate-800 text-slate-500 py-0.5 px-1.5 rounded border border-slate-700 group-hover:border-slate-600 transition-colors">amak-tech/port-buddy</span>
+              </a>
+              <div className="w-px h-4 bg-slate-800"></div>
+              <div className="inline-flex items-center gap-2 text-slate-400">
+                <HeartIcon className="w-5 h-5 text-pink-500" />
+                <span className="text-sm font-medium">Open Source</span>
+              </div>
+            </div>
           </div>
 
           {/* Terminal Preview */}
@@ -101,31 +122,30 @@ export default function Landing() {
               
               <div className="space-y-2">
                 <div className="flex gap-8 text-slate-300">
+                  <span className="text-slate-500">Port Buddy</span>
+                  <span>Mode: http</span>
+                </div>
+                <div className="flex gap-8 text-slate-300">
                   <span className="text-slate-500">Status</span>
-                  <span className="text-green-400 font-bold">Online</span>
+                  <span className="text-green-400 font-bold">&nbsp;Online</span>
                 </div>
                 <div className="flex gap-8 text-slate-300">
-                  <span className="text-slate-500">Account</span>
-                  <span>anton@example.com (Team)</span>
+                  <span className="text-slate-500">Local:</span>
+                  <span>&nbsp;http://localhost:3000</span>
                 </div>
                 <div className="flex gap-8 text-slate-300">
-                  <span className="text-slate-500">Region</span>
-                  <span>us-east-1 (Virginia)</span>
-                </div>
-                <div className="flex gap-8 text-slate-300">
-                  <span className="text-slate-500">Web</span>
-                  <span>http://localhost:4040</span>
+                  <span className="text-slate-500">Public:</span>
+                  <span>https://my-static-subdomain.portbuddy.dev</span>
                 </div>
                 
                 <div className="border-t border-slate-800 my-4"></div>
                 
                 <div className="flex gap-8">
-                  <span className="text-slate-500">Forwarding</span>
-                  <span className="text-white">https://api-dev.portbuddy.dev <span className="text-slate-600">→</span> localhost:3000</span>
+                  <span className="text-slate-500">HTTP requests log:</span>
                 </div>
                 <div className="flex gap-8">
-                  <span className="text-slate-500">Forwarding</span>
-                  <span className="text-white">http://api-dev.portbuddy.dev <span className="text-slate-600">→</span> localhost:3000</span>
+                  <span className="text-slate-500">GET</span>
+                  <span className="text-white">200 https://my-static-subdomain.portbuddy.dev/api/webhooks/stripe</span>
                 </div>
               </div>
             </div>
@@ -175,6 +195,11 @@ export default function Landing() {
             icon={<LockClosedIcon className="w-6 h-6 text-red-400" />}
             title="Private Tunnels"
             description="Protect your tunnels with basic auth or IP allowlisting. Control who can access your local apps."
+          />
+          <FeatureCard 
+            icon={<CodeBracketIcon className="w-6 h-6 text-indigo-400" />}
+            title="100% Open Source"
+            description="Port Buddy is open source and community-driven. Check out our code on GitHub and contribute!"
           />
         </div>
       </section>
