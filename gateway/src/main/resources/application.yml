@@ -169,50 +169,23 @@ spring:
                     regexp: /(?<remaining>.*)
                     replacement: /_custom/$\{customDomain}/$\{remaining}
 
-            - id: static_install_route
+            - id: static_guides_route
               enabled: ${app.spa-fallback-enabled}
               uri: forward:/
               order: 2
               predicates:
-                - Path=/install
+                - Path=/docs/guides/{guide}
               filters:
-                - SetPath=/install/index.html
+                - SetPath=/docs/guides/{guide}/index.html
 
-            - id: static_docs_route
+            - id: static_route
               enabled: ${app.spa-fallback-enabled}
               uri: forward:/
               order: 2
               predicates:
-                - Path=/docs
+                - Path=/{page:docs|install|terms|privacy|contacts}
               filters:
-                - SetPath=/docs/index.html
-
-            - id: static_privacy_route
-              enabled: ${app.spa-fallback-enabled}
-              uri: forward:/
-              order: 2
-              predicates:
-                - Path=/privacy
-              filters:
-                - SetPath=/privacy/index.html
-
-            - id: static_terms_route
-              enabled: ${app.spa-fallback-enabled}
-              uri: forward:/
-              order: 2
-              predicates:
-                - Path=/terms
-              filters:
-                - SetPath=/terms/index.html
-
-            - id: static_contacts_route
-              enabled: ${app.spa-fallback-enabled}
-              uri: forward:/
-              order: 2
-              predicates:
-                - Path=/contacts
-              filters:
-                - SetPath=/contacts/index.html
+                - SetPath=/{page}/index.html
 
             - id: spa_fallback_route
               enabled: ${app.spa-fallback-enabled}
